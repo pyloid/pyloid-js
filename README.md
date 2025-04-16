@@ -1,8 +1,8 @@
 # Pyloid JS SDK
 
-타입스크립트로 작성된 Pyloid JavaScript SDK입니다.
+This is the Pyloid JavaScript SDK written in TypeScript.
 
-## 설치
+## Installation
 
 ```bash
 npm install pyloid-js
