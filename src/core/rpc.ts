@@ -57,7 +57,7 @@ export class RpcClient {
   private async initializeEndpoint(): Promise<string> {
     try {
       console.log('RpcClient: Fetching RPC endpoint...');
-      const url = await baseAPI.getRpcUrl();
+      const url = await baseAPI.getServerUrl();
       this.endpoint = url;
       this.windowId = await baseAPI.getWindowId();
       console.log('RpcClient: Endpoint initialized');
