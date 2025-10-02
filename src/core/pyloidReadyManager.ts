@@ -22,38 +22,60 @@ export class PyloidReadyManager {
       this.resolveReadyPromise = resolve;
       this.rejectReadyPromise = reject;
 
-      // Check immediately if __PYLOID__ is already available
-      if (typeof window !== 'undefined' && window.__PYLOID__) {
-        console.log('PyloidReadyManager: __PYLOID__ found immediately.');
-        this.setReady();
-        // If in a browser environment, start polling
-      } else if (typeof window !== 'undefined') {
-        console.log(
-          `PyloidReadyManager: __PYLOID__ not found. Starting polling every ${this.checkInterval}ms.`
-        );
-        // Start polling interval
-        this.pollingInterval = window.setInterval(() => {
-          if (window.__PYLOID__) {
-            console.log('PyloidReadyManager: __PYLOID__ found via polling.');
-            this.stopPolling(); // Stop polling once found
-            this.setReady(); // Set state to ready
-          }
-        }, this.checkInterval);
+      // Function to initialize polling when window becomes available
+      const initializePolling = () => {
+        // Check immediately if __PYLOID__ is already available
+        if (typeof window !== 'undefined' && window.__PYLOID__) {
+          console.log('PyloidReadyManager: __PYLOID__ found immediately.');
+          this.setReady();
+        } else if (typeof window !== 'undefined') {
+          console.log(
+            `PyloidReadyManager: __PYLOID__ not found. Starting polling every ${this.checkInterval}ms.`
+          );
+          // Start polling interval
+          this.pollingInterval = window.setInterval(() => {
+            if (window.__PYLOID__) {
+              console.log('PyloidReadyManager: __PYLOID__ found via polling.');
+              this.stopPolling(); // Stop polling once found
+              this.setReady(); // Set state to ready
+            }
+          }, this.checkInterval);
 
-        // Set timeout for polling
-        this.pollingTimeout = window.setTimeout(() => {
-          if (!this.ready) {
-            console.error(
-              `PyloidReadyManager: Polling timed out after ${this.timeoutDuration}ms. __PYLOID__ was not injected.`
-            );
-            this.stopPolling(); // Stop polling on timeout
-            this.rejectReadyPromise(new Error('Pyloid initialization timed out.')); // Reject the promise
-          }
-        }, this.timeoutDuration);
-        // Handle cases where window object is not available (e.g., server-side rendering)
+          // Set timeout for polling
+          this.pollingTimeout = window.setTimeout(() => {
+            if (!this.ready) {
+              console.error(
+                `PyloidReadyManager: Polling timed out after ${this.timeoutDuration}ms. __PYLOID__ was not injected.`
+              );
+              this.stopPolling(); // Stop polling on timeout
+              this.rejectReadyPromise(new Error('Pyloid initialization timed out.')); // Reject the promise
+            }
+          }, this.timeoutDuration);
+        } else {
+          // If window is not available, wait for it (useful for SSR environments)
+          console.log(
+            'PyloidReadyManager: window object not available, waiting for client-side initialization.'
+          );
+          // Don't reject here - let the promise remain pending until window becomes available
+        }
+      };
+
+      // Check if window is available immediately
+      if (typeof window !== 'undefined') {
+        initializePolling();
       } else {
-        console.error('PyloidReadyManager: window object is not available.');
-        this.rejectReadyPromise(new Error('Window object not found.'));
+        // For SSR environments, wait for window to become available
+        // This is a fallback for environments where window might become available later
+        if (
+          typeof globalThis !== 'undefined' &&
+          typeof globalThis.addEventListener === 'function'
+        ) {
+          // Some environments might have a way to detect when window becomes available
+          // For now, we'll just leave the promise pending
+          console.log(
+            'PyloidReadyManager: Environment appears to be SSR, promise remains pending.'
+          );
+        }
       }
     });
   }

@@ -87,6 +87,11 @@ export class BaseAPI {
    * @private
    */
   private async ensureReady<T>(fn: () => Promise<T>): Promise<T> {
+    // Check if window is available (skip in SSR environments)
+    if (typeof window === 'undefined') {
+      throw new Error('Pyloid API is not available in server-side rendering environment.');
+    }
+
     // Check if ready, if not, wait for the promise from the manager
     if (!pyloidReadyManager.isReady()) {
       await pyloidReadyManager.whenReady(); // Wait for the ready promise to resolve

@@ -33,7 +33,7 @@ interface JsonRpcResponse<T = any> {
  */
 export class RpcClient {
   private endpoint: string | null = null;
-  private endpointPromise: Promise<string>;
+  private endpointPromise: Promise<string> | null = null;
   private windowId: string | null = null;
 
   /**
@@ -44,9 +44,9 @@ export class RpcClient {
     if (initialEndpoint) {
       this.endpoint = initialEndpoint;
       this.endpointPromise = Promise.resolve(initialEndpoint);
-    } else {
-      this.endpointPromise = this.initializeEndpoint();
     }
+    // Don't initialize automatically in SSR environments
+    // Initialize will be called lazily when first RPC call is made
   }
 
   /**
@@ -74,6 +74,10 @@ export class RpcClient {
    */
   private async ensureEndpointInitialized(): Promise<void> {
     if (!this.endpoint) {
+      // Lazy initialization for SSR environments
+      if (!this.endpointPromise) {
+        this.endpointPromise = this.initializeEndpoint();
+      }
       await this.endpointPromise;
     }
     if (!this.endpoint) {
