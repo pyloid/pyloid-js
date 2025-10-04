@@ -1,26 +1,3 @@
-/**
- * Pyloid HTTP Client Module
- *
- * This module provides enhanced HTTP functionality for Pyloid applications with automatic
- * window ID injection. It serves as a drop-in replacement for the native fetch API
- * while adding Pyloid-specific features like automatic window identification.
- *
- * The module ensures that all HTTP requests include the Pyloid window ID in the headers,
- * which is essential for server-side request routing and multi-window application support.
- *
- * Key Components:
- * - fetch(): Enhanced fetch function with server URL resolution and window ID injection
- * - getServerUrl(): Direct access to current server URL
- * - isServerUrlReady(): Check server URL initialization status
- * - getWindowId(): Direct access to current window ID
- * - isWindowIdReady(): Check window ID initialization status
- * - originalFetch: Reference to unmodified native fetch
- *
- * @author Pyloid Team
- * @version 1.0.0
- * @see {@link https://github.com/pyloid/pyloid | Pyloid GitHub Repository}
- */
-
 import { baseAPI } from './baseAPI';
 
 /**
@@ -194,16 +171,12 @@ async function ensureWindowIdInitialized(): Promise<void> {
  *
  * This function provides the exact same interface as the native fetch API, but with automatic
  * window ID injection for Pyloid applications. It ensures that all HTTP requests include
- * the Pyloid window ID in the headers, which is essential for server-side request routing
- * and identification in Pyloid-based applications.
  *
  * Key Features:
  * - Identical API to native fetch (drop-in replacement)
  * - Automatic window ID injection via 'X-Pyloid-Window-Id' header
- * - Automatic server URL resolution and path combination for FastAPI integration
+ * - Automatic server URL resolution and path combination for server framework integration
  * - Asynchronous initialization (waits for Pyloid to be ready)
- * - Comprehensive error handling and logging
- * - TypeScript support with full type safety
  *
  * @param url - The URL path or Request object to fetch. For Pyloid applications, this is typically
  *              a relative path like '/api/users' or '/data'. The function automatically combines
@@ -330,10 +303,7 @@ async function ensureWindowIdInitialized(): Promise<void> {
  * - Server URL is obtained from baseAPI.getServerUrl() and combined with user-provided paths
  * - Window ID is automatically injected into request headers for server-side routing
  * - If Pyloid is not ready within the timeout period, requests will fail
- * - Supports both relative paths (/api/users) and full URLs (https://external-api.com/data)
- * - All existing fetch functionality is preserved (caching, redirects, credentials, etc.)
  * - The original fetch function is available as `originalFetch` if needed
- * - Full URLs (http://, https://) bypass server URL combination and are used as-is
  */
 export async function fetch(url: RequestInfo | URL, options: RequestInit = {}): Promise<Response> {
   // Ensure both server URL and window ID are initialized
@@ -515,22 +485,6 @@ export function isWindowIdReady(): boolean {
  *
  * @returns The original fetch function from globalThis.fetch
  *
- * @example
- * ```typescript
- * // Make a request without window ID injection
- * const response = await originalFetch('https://api.example.com/internal');
- *
- * // Use with libraries that need native fetch
- * const axios = require('axios');
- * // axios uses its own fetch implementation, but if needed:
- * // axios.defaults.fetch = originalFetch;
- *
- * // Compare with enhanced fetch
- * const enhancedResponse = await fetch('https://api.example.com/data');
- * const originalResponse = await originalFetch('https://api.example.com/data');
- * // enhancedResponse will include X-Pyloid-Window-Id header
- * // originalResponse will not include the header
- * ```
  *
  * @see {@link fetch} for the enhanced fetch function with window ID injection
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch | Global fetch documentation}

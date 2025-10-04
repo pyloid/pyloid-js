@@ -1,7 +1,3 @@
-/**
- * JSON-RPC Client Module
- */
-
 import { baseAPI } from './baseAPI';
 
 /**
