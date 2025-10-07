@@ -1,6 +1,6 @@
 {
   "name": "pyloid-js",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "description": "Pyloid JS SDK",
   "type": "module",
   "main": "dist/index.js",
